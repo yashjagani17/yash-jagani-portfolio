@@ -5,7 +5,7 @@ provider "aws" {
 terraform {
   backend "s3" {
     bucket = "yash-jagani-portfolio-terraform-state"
-    key = "prod/weather-app/terraform.tfstate"
+    key = "prod/website/terraform.tfstate"
     region = "eu-west-2"
     encrypt = true
     use_lockfile = true
