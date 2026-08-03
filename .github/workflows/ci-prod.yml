@@ -4,9 +4,9 @@ on:
    push:
      branches:
       - 'main'
-      - 'dev'
      paths:
       - 'live/prod/**'
+      - 'website/**'
 
 jobs:
   TerraformApply:
@@ -17,9 +17,9 @@ jobs:
     strategy:
       matrix:
         service:
-          - 'live/prod/services/xxx'
-          - 'live/prod/services/yyy'
-          - 'live/prod/services/zzz'
+          - 'live/prod/services/website'
+          - 'live/prod/services/todo-app'
+          - 'live/prod/services/weather-app'
     defaults:
       run:
         working-directory: ${{ matrix.service }}
@@ -42,3 +42,8 @@ jobs:
       - name: terraform apply
         run: |
           terraform apply -auto-approve
+      - name: Sync website files
+        if: matrix.service == 'live/prod/services/website'
+        run: |
+          BUCKET=$(terraform output -raw bucket_name)
+          aws s3 sync ../../../website "s3://$BUCKET" --delete
