@@ -44,7 +44,5 @@ jobs:
       - name: Sync website files
         if: matrix.service == 'live/prod/services/website'
         run: |
-          pwd
           BUCKET=$(terraform output -raw bucket_name)
-          echo $bucket_name
-          aws s3 sync ../../../website "s3://$BUCKET" --delete
+          aws s3 sync ../../../../website "s3://$BUCKET" --delete
