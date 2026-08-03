@@ -1,0 +1,44 @@
+name: terraform apply (matrix)
+
+on:
+   push:
+     branches:
+      - 'main'
+      - 'dev'
+     paths:
+      - 'live/prod/**'
+
+jobs:
+  TerraformApply:
+    permissions:
+      id-token: write
+      contents: read
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service:
+          - 'live/prod/services/xxx'
+          - 'live/prod/services/yyy'
+          - 'live/prod/services/zzz'
+    defaults:
+      run:
+        working-directory: ${{ matrix.service }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: eu-west-2
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: 1.15.8
+          terraform_wrapper: false
+      - name: terraform init
+        run: |
+          terraform init
+      - name: terraform plan
+        run: |
+          terraform plan -out=tfplan
+      - name: terraform apply
+        run: |
+          terraform apply -auto-approve
