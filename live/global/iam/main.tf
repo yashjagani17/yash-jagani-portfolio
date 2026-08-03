@@ -48,3 +48,35 @@ data "aws_iam_policy_document" "assume_role_policy" {
     }
   }
 }
+
+data "aws_iam_policy_document" "terraform_state_access" {
+  statement {
+    effect  = "Allow"
+    actions = ["s3:ListBucket"]
+    resources = [
+      "arn:aws:s3:::yash-jagani-portfolio-terraform-state"
+    ]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "s3:GetObject",
+      "s3:PutObject",
+      "s3:DeleteObject"
+    ]
+    resources = [
+      "arn:aws:s3:::yash-jagani-portfolio-terraform-state/*"
+    ]
+  }
+}
+
+resource "aws_iam_policy" "terraform_state_access" {
+  name        = "yash-jagani-portfolio-terraform-state-policy"
+  policy      = data.aws_iam_policy_document.terraform_state_access.json
+}
+
+resource "aws_iam_role_policy_attachment" "github_actions_state_access" {
+  role       = aws_iam_role.github_actions.name
+  policy_arn = aws_iam_policy.terraform_state_access.arn
+}
