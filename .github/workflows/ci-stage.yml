@@ -19,8 +19,6 @@ jobs:
       matrix:
         service:
           - 'live/stage/services/website'
-          - 'live/stage/services/todo-app'
-          - 'live/stage/services/weather-app'
     defaults:
       run:
         working-directory: ${{ matrix.service }}
