@@ -7,6 +7,7 @@ on:
      paths:
       - 'live/prod/**'
       - 'website/**'
+      - '.github/workflows/**'
 
 jobs:
   TerraformApply:
@@ -44,6 +45,7 @@ jobs:
           terraform apply -auto-approve
       - name: Sync website files
         if: matrix.service == 'live/prod/services/website'
+        working-directory: live/prod/services/website
         run: |
           BUCKET=$(terraform output -raw bucket_name)
           aws s3 sync ../../../website "s3://$BUCKET" --delete
