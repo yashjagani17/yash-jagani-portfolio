@@ -1,4 +1,4 @@
-name: terraform apply (matrix)
+name: terraform apply
 
 on:
    push:
