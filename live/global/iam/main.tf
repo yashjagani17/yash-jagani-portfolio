@@ -12,6 +12,15 @@ provider "aws" {
   region = "eu-west-2"
 }
 
+locals {
+  managed_policies = [
+    "arn:aws:iam::aws:policy/AmazonRoute53FullAccess",
+    "arn:aws:iam::aws:policy/CloudFrontFullAccess",
+    "arn:aws:iam::aws:policy/AWSCertificateManagerFullAccess",
+    "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+  ]
+}
+
 resource "aws_iam_openid_connect_provider" "github_actions" {
   url            = "https://token.actions.githubusercontent.com"
   client_id_list = ["sts.amazonaws.com"]
@@ -49,34 +58,8 @@ data "aws_iam_policy_document" "assume_role_policy" {
   }
 }
 
-data "aws_iam_policy_document" "terraform_state_access" {
-  statement {
-    effect  = "Allow"
-    actions = ["s3:ListBucket"]
-    resources = [
-      "arn:aws:s3:::yash-jagani-portfolio-terraform-state"
-    ]
-  }
-
-  statement {
-    effect = "Allow"
-    actions = [
-      "s3:GetObject",
-      "s3:PutObject",
-      "s3:DeleteObject"
-    ]
-    resources = [
-      "arn:aws:s3:::yash-jagani-portfolio-terraform-state/*"
-    ]
-  }
-}
-
-resource "aws_iam_policy" "terraform_state_access" {
-  name        = "yash-jagani-portfolio-terraform-state-policy"
-  policy      = data.aws_iam_policy_document.terraform_state_access.json
-}
-
-resource "aws_iam_role_policy_attachment" "github_actions_state_access" {
-  role       = aws_iam_role.github_actions.name
-  policy_arn = aws_iam_policy.terraform_state_access.arn
+resource "aws_iam_role_policy_attachment" "managed_attachments" {
+  for_each = toset(local.managed_policies)
+  role = aws_iam_role.github_actions.name
+  policy_arn = each.value
 }
