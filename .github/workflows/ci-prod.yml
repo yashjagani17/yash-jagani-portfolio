@@ -1,4 +1,4 @@
-name: terraform apply
+name: terraform apply (main/prod)
 
 on:
    push:
