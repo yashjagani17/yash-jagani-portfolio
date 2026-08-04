@@ -8,7 +8,7 @@ on:
       - 'website/**'
       - '.github/workflows/**'
    pull_request:
-    branches: [main]
+    branches: [main, dev]
     paths:
       - 'live/prod/**'
       - 'website/**'
