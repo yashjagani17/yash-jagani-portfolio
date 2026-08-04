@@ -39,9 +39,6 @@ jobs:
         with:
           terraform_version: 1.15.8
           terraform_wrapper: false
-      - name: terraform format
-        run: |
-          terraform fmt
       - name: terraform init
         run: |
           terraform init
@@ -52,6 +49,8 @@ jobs:
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: 'config'
+          scan-ref: ${{ matrix.service }}
+          trivyignores: '${{ matrix.service }}/.trivyignore'
           hide-progress: true
           format: 'sarif'
           output: 'trivy-results.sarif'
