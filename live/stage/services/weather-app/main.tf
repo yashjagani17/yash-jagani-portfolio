@@ -4,10 +4,10 @@ provider "aws" {
 
 terraform {
   backend "s3" {
-    bucket = "yash-jagani-portfolio-terraform-state"
-    key = "stage/website/terraform.tfstate"
-    region = "eu-west-2"
-    encrypt = true
+    bucket       = "yash-jagani-portfolio-terraform-state"
+    key          = "stage/website/terraform.tfstate"
+    region       = "eu-west-2"
+    encrypt      = true
     use_lockfile = true
   }
 }

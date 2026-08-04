@@ -19,6 +19,15 @@ locals {
     "arn:aws:iam::aws:policy/AWSCertificateManagerFullAccess",
     "arn:aws:iam::aws:policy/AmazonS3FullAccess"
   ]
+  unique_repos = distinct([
+    for a in var.allowed_repos_branches :
+    {
+      org     = a.org
+      org_id  = a.org_id
+      repo    = a.repo
+      repo_id = a.repo_id
+    }
+  ])
 }
 
 resource "aws_iam_openid_connect_provider" "github_actions" {
@@ -50,16 +59,22 @@ data "aws_iam_policy_document" "assume_role_policy" {
     condition {
       test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
-      values = [
-        for a in var.allowed_repos_branches :
-        "repo:${a["org"]}@${a["org_id"]}/${a["repo"]}@${a["repo_id"]}:ref:refs/heads/${a["branch"]}"
-      ]
+      values = concat(
+        [
+          for a in var.allowed_repos_branches :
+          "repo:${a["org"]}@${a["org_id"]}/${a["repo"]}@${a["repo_id"]}:ref:refs/heads/${a["branch"]}"
+        ],
+        [
+          for a in local.unique_repos :
+          "repo:${a["org"]}@${a["org_id"]}/${a["repo"]}@${a["repo_id"]}:pull_request"
+        ]
+      )
     }
   }
 }
 
 resource "aws_iam_role_policy_attachment" "managed_attachments" {
-  for_each = toset(local.managed_policies)
-  role = aws_iam_role.github_actions.name
+  for_each   = toset(local.managed_policies)
+  role       = aws_iam_role.github_actions.name
   policy_arn = each.value
 }

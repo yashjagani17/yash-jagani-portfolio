@@ -1,0 +1,13 @@
+# .trivyignore
+
+# WAF expensive to implement, not suitable for this project
+AWS-0011
+
+# SSE is sufficient for this project, CSE/KMS not required
+AWS-0132
+
+# CloudFront logging might be added in the future, not essential
+AWS-0010
+
+# S3 bucket logging might be added in the future, not essential
+AWS-0089
