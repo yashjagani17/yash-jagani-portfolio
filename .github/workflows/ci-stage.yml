@@ -32,9 +32,30 @@ jobs:
         with:
           terraform_version: 1.15.8
           terraform_wrapper: false
+      - name: terraform format
+        run: |
+          terraform fmt
       - name: terraform init
         run: |
           terraform init
+      - name: terraform validate
+        run: |
+          terraform validate
+
+      - name: trivy iac scan
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: 'config'
+          hide-progress: true
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          exit-code: '1'
+          severity: 'CRITICAL,HIGH'
+      - name: trivy results to github security
+        if: always()
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: 'trivy-results.sarif'
       - name: terraform plan
         run: |
           terraform plan -out=tfplan

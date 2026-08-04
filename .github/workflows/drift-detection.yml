@@ -1,0 +1,49 @@
+name: drift detection
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+jobs:
+  drift-check:
+      permissions:
+          id-token: write
+          contents: read
+      runs-on: ubuntu-latest
+      strategy:
+        fail-fast: false
+        matrix:
+          service:
+            - live/prod/services/website
+      defaults:
+          run:
+            working-directory: ${{ matrix.service }}
+      steps:
+          - uses: actions/checkout@v7
+          - uses: aws-actions/configure-aws-credentials@v6
+            with:
+              role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+              aws-region: eu-west-2
+          - uses: hashicorp/setup-terraform@v4
+            with:
+              terraform_version: 1.15.8
+              terraform_wrapper: false
+          - name: terraform init
+            run: |
+              terraform init
+          - name: terraform plan
+            id: plan
+            run: |
+              set +e 
+              terraform plan -detailed-exitcode -no-color
+              echo "exitcode=$?" >> "$GITHUB_OUTPUT"
+          - name: fail if drift or error
+            if: steps.plan.outputs.exitcode == '1' || steps.plan.outputs.exitcode == '2'
+            run: |
+              if [ "${{ steps.plan.outputs.exitcode }}" == "2" ]; then
+                echo "::error::drift detected in ${{ matrix.service }}"
+              else
+                echo "::error::terraform plan failed for ${{ matrix.service }}"
+              fi
+              exit 1

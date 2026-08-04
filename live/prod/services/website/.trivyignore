@@ -1,0 +1,7 @@
+# .trivyignore
+
+# WAF expensive to implement, not suitable for this project
+AWS-0011
+
+# SSE is sufficient for this project, CSE/KMS not required
+AWS-0132
