@@ -2,9 +2,14 @@ name: terraform apply
 
 on:
    push:
-     branches:
-      - 'main'
+     branches: [main]
      paths:
+      - 'live/prod/**'
+      - 'website/**'
+      - '.github/workflows/**'
+   pull_request:
+    branches: [main]
+    paths:
       - 'live/prod/**'
       - 'website/**'
       - '.github/workflows/**'
@@ -43,7 +48,6 @@ jobs:
       - name: terraform validate
         run: |
           terraform validate
-
       - name: trivy iac scan
         uses: aquasecurity/trivy-action@v0.36.0
         with:
@@ -62,10 +66,11 @@ jobs:
         run: |
           terraform plan -out=tfplan
       - name: terraform apply
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         run: |
           terraform apply -auto-approve
       - name: Sync website files
-        if: matrix.service == 'live/prod/services/website'
+        if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && matrix.service == 'live/prod/services/website'
         run: |
           BUCKET=$(terraform output -raw bucket_name)
           aws s3 sync ../../../../website "s3://$BUCKET" --delete
