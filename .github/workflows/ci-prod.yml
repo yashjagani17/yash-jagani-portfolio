@@ -8,6 +8,7 @@ on:
       - 'live/prod/**'
       - 'website/**'
       - '.github/workflows/**'
+   workflow_dispatch:
 
 jobs:
   TerraformApply:
