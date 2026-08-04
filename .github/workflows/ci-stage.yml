@@ -20,6 +20,7 @@ jobs:
     permissions:
       id-token: write
       contents: read
+      security-events: write
     runs-on: ubuntu-latest
     strategy:
       matrix:
