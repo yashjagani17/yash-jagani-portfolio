@@ -29,6 +29,6 @@ module "static_website" {
   }
   project_env    = "prod"
   project_name   = "website"
-  domain_name    = "yashjagani.com"
+  domain_name    = "www.yashjagani.com"
   hosted_zone_id = data.aws_route53_zone.root.zone_id
 }
