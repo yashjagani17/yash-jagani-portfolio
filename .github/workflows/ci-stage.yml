@@ -38,8 +38,8 @@ jobs:
       - uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: 'config'
-          scan-ref: ${{ matrix.service }}
-          trivyignores: '${{ matrix.service }}/.trivyignore'
+          scan-ref: 'live/stage/services/website'
+          trivyignores: 'live/stage/services/website/.trivyignore'
           hide-progress: true
           format: 'sarif'
           output: 'trivy-results.sarif'
