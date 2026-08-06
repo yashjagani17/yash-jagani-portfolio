@@ -31,8 +31,7 @@ data "terraform_remote_state" "parameter_store" {
 }
 
 module "weather_app" {
-  # source = "git::https://github.com/yashjagani17/terraform-modules.git//services/weather-app?ref=v1.0.0"
-  source = "../../../../../terraform-modules/services/weather-app/"
+  source = "git::https://github.com/yashjagani17/terraform-modules.git//services/weather-app?ref=weather-app-v1.0.0"
 
   project_name      = "weather-app"
   project_env       = "stage"
