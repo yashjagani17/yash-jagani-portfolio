@@ -39,6 +39,7 @@ jobs:
         with:
           scan-type: 'config'
           scan-ref: 'live/stage/services/website'
+          trivyignores: 'live/stage/services/website/.trivyignore'
           hide-progress: true
           format: 'sarif'
           output: 'trivy-results.sarif'
@@ -81,6 +82,7 @@ jobs:
         with:
           scan-type: 'config'
           scan-ref: '${{ matrix.service }}'
+          trivyignores: '${{ matrix.service }}/.trivyignore'
           hide-progress: true
           format: 'sarif'
           output: 'trivy-results.sarif'
