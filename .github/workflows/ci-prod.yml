@@ -55,6 +55,7 @@ jobs:
           severity: 'CRITICAL,HIGH'
       - name: trivy results to github security
         if: always()
+        continue-on-error: true
         uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: 'trivy-results.sarif'
