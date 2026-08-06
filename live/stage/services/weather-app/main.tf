@@ -31,11 +31,11 @@ data "terraform_remote_state" "parameter_store" {
 }
 
 module "weather_app" {
-  source = "git::https://github.com/yashjagani17/terraform-modules.git//services/weather-app?ref=weather-app-v1.0.0"
+  source = "git::https://github.com/yashjagani17/terraform-modules.git//services/weather-app?ref=weather-app-v1.0.1"
 
-  project_name      = "weather-app"
-  project_env       = "stage"
-  iam_role_arn      = data.terraform_remote_state.iam.outputs.lambda_execution_role_arn
-  api_key_path      = data.terraform_remote_state.parameter_store.outputs.stage_path
-  cors_origins      = ["https://stage.yashjagani.com"]
+  project_name = "weather-app"
+  project_env  = "stage"
+  iam_role_arn = data.terraform_remote_state.iam.outputs.lambda_execution_role_arn
+  api_key_path = data.terraform_remote_state.parameter_store.outputs.stage_path
+  cors_origins = ["https://stage.yashjagani.com"]
 }

@@ -1,1 +1,10 @@
 # .trivyignore
+
+# SSE is sufficient for this project, CSE/KMS not required
+AWS-0132
+
+# X-Ray tracing not required at this scale, may add in the future
+AWS-0066
+
+# S3 bucket logging might be added in the future, not essential
+AWS-0089

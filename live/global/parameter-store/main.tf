@@ -13,17 +13,17 @@ provider "aws" {
 }
 
 resource "aws_ssm_parameter" "weather_app_stage" {
-  name = "/weather-app/stage/api-key"
+  name        = "/weather-app/stage/api-key"
   description = "API key for the staging weather app"
-  type = "SecureString"
-  value = var.api_keys["stage"]
-  overwrite = true
+  type        = "SecureString"
+  value       = var.api_keys["stage"]
+  overwrite   = true
 }
 
 resource "aws_ssm_parameter" "weather_app_prod" {
-  name = "/weather-app/prod/api-key"
+  name        = "/weather-app/prod/api-key"
   description = "API key for the production weather app"
-  type = "SecureString"
-  value = var.api_keys["prod"]
-  overwrite = true
+  type        = "SecureString"
+  value       = var.api_keys["prod"]
+  overwrite   = true
 }
