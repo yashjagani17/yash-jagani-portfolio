@@ -504,7 +504,7 @@ async function idxFetchWeather() {
   status.className = 'weather-status';
   grid.style.display = 'none';
   try {
-    const res = await fetch('https://328mtk9dai.execute-api.eu-west-2.amazonaws.com/weather', {
+    const res = await fetch('https://0wegtbk8t4.execute-api.eu-west-2.amazonaws.com/weather', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ city })
