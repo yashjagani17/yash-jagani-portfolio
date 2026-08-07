@@ -1,5 +1,4 @@
 name: terraform apply (dev/stage)
-
 on:
    push:
      branches: [dev]
@@ -11,20 +10,19 @@ on:
     branches: [dev]
    workflow_dispatch:
 
+permissions:
+  id-token: write
+  contents: read
+  security-events: write
+
 jobs:
-  TerraformApply:
-    permissions:
-      id-token: write
-      contents: read
-      security-events: write
+  website:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        service:
-          - 'live/stage/services/website'
+    outputs:
+      bucket: ${{ steps.output.outputs.bucket }}
     defaults:
       run:
-        working-directory: ${{ matrix.service }}
+        working-directory: live/stage/services/website
     steps:
       - uses: actions/checkout@v7
       - uses: aws-actions/configure-aws-credentials@v6
@@ -35,37 +33,95 @@ jobs:
         with:
           terraform_version: 1.15.8
           terraform_wrapper: false
-      - name: terraform init
-        run: |
-          terraform init
-      - name: terraform validate
-        run: |
-          terraform validate
-      - name: trivy iac scan
-        uses: aquasecurity/trivy-action@v0.36.0
+      - run: terraform init
+      - run: terraform validate
+      - uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: 'config'
-          scan-ref: ${{ matrix.service }}
+          scan-ref: 'live/stage/services/website'
+          trivyignores: 'live/stage/services/website/.trivyignore'
+          hide-progress: true
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          exit-code: '1'
+          severity: 'CRITICAL,HIGH'
+      - if: always()
+        continue-on-error: true
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: 'trivy-results.sarif'
+      - run: terraform plan -out=tfplan
+      - if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        run: terraform apply -auto-approve tfplan
+      - id: output
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        run: echo "bucket=$(terraform output -raw bucket_name)" >> "$GITHUB_OUTPUT"
+  services:
+    needs: website
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service:
+          - 'live/stage/services/weather-app'
+    defaults:
+      run:
+        working-directory: ${{ matrix.service }}
+    steps: 
+      - uses: actions/checkout@v7
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: eu-west-2
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: 1.15.8
+          terraform_wrapper: false
+      - run: terraform init
+      - run: terraform validate
+      - uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: 'config'
+          scan-ref: '${{ matrix.service }}'
           trivyignores: '${{ matrix.service }}/.trivyignore'
           hide-progress: true
           format: 'sarif'
           output: 'trivy-results.sarif'
           exit-code: '1'
           severity: 'CRITICAL,HIGH'
-      - name: trivy results to github security
-        if: always()
+      - if: always()
+        continue-on-error: true
         uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: 'trivy-results.sarif'
-      - name: terraform plan
+      - run: terraform plan -out=tfplan
+      - if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        run: terraform apply -auto-approve tfplan
+
+  sync-website:
+    needs: [website, services]
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: eu-west-2
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: 1.15.8
+          terraform_wrapper: false
+
+      - name: Get weather-app endpoint
+        id: weather
+        working-directory: live/stage/services/weather-app
         run: |
-          terraform plan -out=tfplan
-      - name: terraform apply
-        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+          terraform init
+          echo "api_url=$(terraform output -raw api_endpoint | sed 's:/*$::')" >> "$GITHUB_OUTPUT"
+
+      - name: Build and sync website
         run: |
-          terraform apply -auto-approve tfplan
-      - name: Sync website files
-        if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && matrix.service == 'live/stage/services/website'
-        run: |
-          BUCKET=$(terraform output -raw bucket_name)
-          aws s3 sync ../../../../website "s3://$BUCKET" --delete
+          mkdir -p build
+          cp -r website/* build/
+          sed -i "s|https://[a-z0-9]*\.execute-api\.eu-west-2\.amazonaws\.com|${{ steps.weather.outputs.api_url }}|g" build/weather.html build/projects.html
+          aws s3 sync build/ "s3://${{ needs.website.outputs.bucket }}" --delete

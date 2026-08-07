@@ -1,4 +1,4 @@
 variable "api_keys" {
-  type = map(string)
+  type      = map(string)
   sensitive = true
 }
