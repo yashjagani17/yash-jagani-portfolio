@@ -22,7 +22,7 @@ data "aws_route53_zone" "root" {
 }
 
 module "static_website" {
-  source = "git::https://github.com/yashjagani17/terraform-modules.git//services/static-website?ref=v1.0.3"
+  source = "git::https://github.com/yashjagani17/terraform-modules.git//services/static-website?ref=website-v1.0.4"
   providers = {
     aws           = aws
     aws.us_east_1 = aws.us_east_1
@@ -31,4 +31,6 @@ module "static_website" {
   project_name   = "website"
   domain_name    = "www.yashjagani.com"
   hosted_zone_id = data.aws_route53_zone.root.zone_id
+  enable_apex_redirect  = true
+  apex_domain           = "yashjagani.com"
 }
