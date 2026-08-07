@@ -18,7 +18,9 @@ locals {
     "arn:aws:iam::aws:policy/CloudFrontFullAccess",
     "arn:aws:iam::aws:policy/AWSCertificateManagerFullAccess",
     "arn:aws:iam::aws:policy/AmazonS3FullAccess",
-    "arn:aws:iam::aws:policy/AWSLambda_FullAccess"
+    "arn:aws:iam::aws:policy/AWSLambda_FullAccess",
+    "arn:aws:iam::aws:policy/AmazonAPIGatewayAdministrator",
+    "arn:aws:iam::aws:policy/CloudWatchLogsFullAccess"
   ]
   unique_repos = distinct([
     for a in var.allowed_repos_branches :
