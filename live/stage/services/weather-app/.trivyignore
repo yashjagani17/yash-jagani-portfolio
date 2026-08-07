@@ -8,3 +8,6 @@ AWS-0066
 
 # S3 bucket logging might be added in the future, not essential
 AWS-0089
+
+# CloudWatch log group is not encrypted as it requires customer managed KMS (expensive to implement for this scale)
+AWS-0017
